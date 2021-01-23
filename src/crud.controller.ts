@@ -7,7 +7,7 @@ import {
   Delete,
   Body,
   Query,
-  Req
+  Req,
 } from "@nestjs/common";
 import { ApiOperation, ApiQuery } from "@nestjs/swagger";
 import { CrudQuery, ICrudQuery } from "./crud-query.decorator";
@@ -43,7 +43,7 @@ export class CrudController {
     name: "query",
     type: String,
     required: false,
-    description: "Query options"
+    description: "Query options",
   })
   find(@CrudQuery("query") query: ICrudQuery = {}) {
     let {
@@ -51,8 +51,9 @@ export class CrudController {
       limit = get(this.crudOptions, "routes.find.limit", 10),
       page = 1,
       skip = 0,
+      select = get(this.crudOptions, "routes.find.populate", undefined),
       populate = get(this.crudOptions, "routes.find.populate", undefined),
-      sort = get(this.crudOptions, "routes.find.sort", undefined)
+      sort = get(this.crudOptions, "routes.find.sort", undefined),
     } = query;
 
     if (skip < 1) {
@@ -72,6 +73,7 @@ export class CrudController {
         .skip(skip)
         .limit(limit)
         .sort(sort)
+        .select(select)
         .populate(populate);
       if (paginateKeys !== false) {
         const total = await this.model.countDocuments(where);
@@ -79,7 +81,7 @@ export class CrudController {
           [paginateKeys.total]: total,
           [paginateKeys.data]: data,
           [paginateKeys.lastPage]: Math.ceil(total / limit),
-          [paginateKeys.currentPage]: page
+          [paginateKeys.currentPage]: page,
         };
       }
       return data;
@@ -93,7 +95,7 @@ export class CrudController {
     let {
       where = get(this.crudOptions, "routes.findOne.where", {}),
       populate = get(this.crudOptions, "routes.findOne.populate", undefined),
-      select = get(this.crudOptions, "routes.findOne.select", null)
+      select = get(this.crudOptions, "routes.findOne.select", null),
     } = query;
     return this.model
       .findById(id)
@@ -122,7 +124,7 @@ export class CrudController {
     return this.model.findOneAndUpdate({ _id: id }, body, {
       new: true,
       upsert: false,
-      runValidators: true
+      runValidators: true,
     });
   }
 
